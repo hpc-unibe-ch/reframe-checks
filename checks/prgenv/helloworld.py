@@ -148,10 +148,11 @@ class HelloWorldTestMPI(HelloWorldBaseTest):
         self.num_cpus_per_task = 1
 
 
-@rfm.parameterized_test(*([lang]
-                          for lang in ['cpp', 'c', 'f90']))
+@rfm.parameterized_test(*([lang,si]
+                          for lang in ['cpp', 'c', 'f90']
+                          for si in ['small', 'normal']))
 class HelloWorldTestMPIOpenMP(HelloWorldBaseTest):
-    def __init__(self, lang):
+    def __init__(self, lang, si):
         super().__init__('mpi_openmp', lang)
         self.sourcesdir = 'src/mpi_openmp'
         self.sourcepath += '_mpi_openmp.' + lang
@@ -161,9 +162,16 @@ class HelloWorldTestMPIOpenMP(HelloWorldBaseTest):
             'intel': ['-qopenmp'],
         }
 
-        self.num_tasks = 4
-        self.num_tasks_per_node = 2
-        self.num_cpus_per_task = 3
+        if (si is 'small'):
+            self.valid_systems = ['ubelix:gpu']
+            self.num_tasks = 2
+            self.num_tasks_per_node = 1
+            self.num_cpus_per_task = 2
+        else:
+            self.valid_systems = ['ubelix:mc', 'ubelix:amd']
+            self.num_tasks = 3
+            self.num_tasks_per_node = 3
+            self.num_cpus_per_task = 2
 
         # On SLURM there is no need to set OMP_NUM_THREADS if one defines
         # num_cpus_per_task, but adding for completeness and portability
