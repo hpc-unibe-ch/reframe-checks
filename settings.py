@@ -53,16 +53,29 @@ site_configuration = {
                     'launcher': 'local'
                 },
                 {
-                    'name': 'mc',
+                    'name': 'ivy',
                     'scheduler': 'slurm',
                     'modules': [],
-                    'access': [],
+                    'access': ['--constrain=ivy'],
                     'environs': [
                         'foss',
                         'intel',
                         'pgi'
                     ],
-                    'descr': 'compute nodes',
+                    'descr': 'ivybridge compute nodes',
+                    'launcher': 'srun'
+                },
+                {
+                    'name': 'broadwell',
+                    'scheduler': 'slurm',
+                    'modules': [],
+                    'access': ['--constrain=broadwell'],
+                    'environs': [
+                        'foss',
+                        'intel',
+                        'pgi'
+                    ],
+                    'descr': 'broadwell compute nodes',
                     'launcher': 'srun'
                 },
                 {
