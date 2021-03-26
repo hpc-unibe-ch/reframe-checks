@@ -56,7 +56,7 @@ site_configuration = {
                     'name': 'ivy',
                     'scheduler': 'slurm',
                     'modules': [],
-                    'access': ['--constrain=ivy'],
+                    'access': ['--constraint=ivy'],
                     'environs': [
                         'foss',
                         'intel',
@@ -69,7 +69,7 @@ site_configuration = {
                     'name': 'broadwell',
                     'scheduler': 'slurm',
                     'modules': [],
-                    'access': ['--constrain=broadwell'],
+                    'access': ['--constraint=broadwell'],
                     'environs': [
                         'foss',
                         'intel',
