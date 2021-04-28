@@ -31,6 +31,31 @@ site_configuration = {
             ]
         },
         {
+            'name': 'submit01',
+            'descr': 'submit01 login node',
+            'hostnames': [
+                'submit01'
+            ],
+            'modules_system': 'lmod',
+            'stagedir': '{}/stage/'.format(reframe_workdir),
+            'outputdir': '{}/output/'.format(reframe_workdir),
+            'resourcesdir': '{}/resources'.format(reframe_workdir),
+            'partitions': [
+                {
+                    'name': 'login',
+                    'scheduler': 'local',
+                    'modules': [],
+                    'access': ['submit01'],
+                    'environs': [
+                        'foss',
+                        'builtin-gcc',
+                    ],
+                    'descr': 'Login nodes',
+                    'launcher': 'ssh'
+                }
+            ]
+        },
+        {
             'name': 'ubelix',
             'descr': 'UniBE HPC system UBELiX',
             'hostnames': [
@@ -50,8 +75,34 @@ site_configuration = {
                         'builtin-gcc'
                     ],
                     'descr': 'Login nodes',
-                    'launcher': 'local'
+                    'launcher': 'ssh'
                 },
+                {
+                     'name': 'submit01',
+                     'scheduler': 'local',
+                     'modules': [],
+                     'access': ['submit01'],
+                     'environs': [
+                       'foss',
+                       'intel',
+                       'builtin-gcc'
+                     ],
+                     'descr': 'Login node submit01',
+                     'launcher': 'ssh'
+                },
+                {
+                     'name': 'submit03',
+                     'scheduler': 'local',
+                     'modules': [],
+                     'access': ['submit03'],
+                     'environs': [
+                       'foss',
+                       'intel',
+                       'builtin-gcc'
+                     ],
+                     'descr': 'Login node submit03',
+                     'launcher': 'ssh'
+                 },
                 {
                     'name': 'ivy',
                     'scheduler': 'slurm',
@@ -111,12 +162,6 @@ site_configuration = {
         }
     ],
     'environments': [
-        {
-            'name': 'builtin',
-            'cc': 'cc',
-            'cxx': '',
-            'ftn': ''
-        },
         {
             'name': 'builtin-gcc',
             'cc': 'gcc',
@@ -182,47 +227,13 @@ site_configuration = {
                     'prefix': '%(check_system)s/%(check_partition)s',
                     'level': 'info',
                     'format': '%(asctime)s|reframe %(version)s|%(check_info)s|jobid=%(check_jobid)s|%(check_perf_var)s=%(check_perf_value)s|ref=%(check_perf_ref)s (l=%(check_perf_lower_thres)s, u=%(check_perf_upper_thres)s)|%(check_perf_unit)s',  # noqa: E501
-                    'append': True
-                }
-            ]
-        },
-        {
-            'level': 'debug',
-            'handlers': [
-                {
-                    'type': 'file',
-                    'name': 'reframe.log',
-                    'level': 'debug',
-                    'format': '[%(asctime)s] %(levelname)s: %(check_info)s: %(message)s',  # noqa: E501
-                    'append': False
-                },
-                {
-                    'type': 'stream',
-                    'name': 'stdout',
-                    'level': 'info',
-                    'format': '%(message)s'
-                },
-                {
-                    'type': 'file',
-                    'name': 'reframe.out',
-                    'level': 'info',
-                    'format': '%(message)s',
-                    'append': False
-                }
-            ],
-            'handlers_perflog': [
-                {
-                    'type': 'filelog',
-                    'prefix': '%(check_system)s/%(check_partition)s',
-                    'level': 'info',
-                    'format': '%(asctime)s|reframe %(version)s|%(check_info)s|jobid=%(check_jobid)s|%(check_perf_var)s=%(check_perf_value)s|ref=%(check_perf_ref)s (l=%(check_perf_lower_thres)s, u=%(check_perf_upper_thres)s)|%(check_perf_unit)s',  # noqa: E501
                     'append': True,
-                    'basedir': '/storage/homefs/ms20e149/ReFrame/logs/'
+                    'basedir': '{}/logs/'.format(reframe_workdir)
                 }
             ],
-            'target_systems': [
-                'ubelix'
-            ]
+#            'target_systems': [
+#                'ubelix', 'submit01'
+#            ]
         }
     ],
     'general': [
