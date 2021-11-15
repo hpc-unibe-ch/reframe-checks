@@ -14,6 +14,7 @@ import reframe.utility.sanity as sn
 class IorCheck(rfm.RegressionTest):
     def __init__(self, base_dir):
         self.descr = f'IOR check ({base_dir})'
+        self.time_limit = '1h'
         self.tags = {'ops', base_dir}
         self.base_dir = base_dir
         if self.base_dir in os.getenv('SCRATCH'):
@@ -27,31 +28,31 @@ class IorCheck(rfm.RegressionTest):
         self.test_file = os.path.join(self.test_dir, 'ior')
         self.fs = {
             '/storage/scratch': {
-                'valid_systems': ['ubelix:ivy', 'ubelix:broadwell', 'ubelix:gpu', 'ubelix:amd', 'ubelix:submit01', 'ubelix:submit03'],
+                'valid_systems': ['ubelix:ivy', 'ubelix:bdw', 'ubelix:gpu', 'ubelix:epyc2', 'ubelix:submit01', 'ubelix:submit03'],
                 'ubelix:submit01': { 'ior_access_type': 'POSIX', },
                 'ubelix:submit03': { 'ior_access_type': 'POSIX', },
-                'ubelix:gpu': { 'num_tasks': 3, },
+                'ubelix:gpu': { 'num_tasks': 1, },
                 'ubelix:ivy': { 'num_tasks': 3, },
-                'ubelix:broadwell': { 'num_tasks': 3, },
-                'ubelix:amd': { 'num_tasks': 3, },
+                'ubelix:bdw': { 'num_tasks': 3, },
+                'ubelix:epyc2': { 'num_tasks': 3, },
             },
             '/storage/workspace': {
-                 'valid_systems': ['ubelix:ivy', 'ubelix:broadwell', 'ubelix:gpu', 'ubelix:amd', 'ubelix:submit01', 'ubelix:submit03'],
+                 'valid_systems': ['ubelix:ivy', 'ubelix:bdw', 'ubelix:gpu', 'ubelix:epyc2', 'ubelix:submit01', 'ubelix:submit03'],
                 'ubelix:submit01': { 'ior_access_type': 'POSIX', },
                 'ubelix:submit03': { 'ior_access_type': 'POSIX', },
-                'ubelix:gpu': { 'num_tasks': 3, },
+                'ubelix:gpu': { 'num_tasks': 1, },
                 'ubelix:ivy': { 'num_tasks': 3, },
-                'ubelix:broadwell': { 'num_tasks': 3, },
-                'ubelix:amd': { 'num_tasks': 3, },
+                'ubelix:bdw': { 'num_tasks': 3, },
+                'ubelix:epyc2': { 'num_tasks': 3, },
             },
             '/storage/homefs': {
-                  'valid_systems': ['ubelix:ivy', 'ubelix:broadwell', 'ubelix:gpu', 'ubelix:amd', 'ubelix:submit01', 'ubelix:submit03'],
+                  'valid_systems': ['ubelix:ivy', 'ubelix:bdw', 'ubelix:gpu', 'ubelix:epyc2', 'ubelix:submit01', 'ubelix:submit03'],
                 'ubelix:submit01': { 'ior_access_type': 'POSIX', },
                 'ubelix:submit03': { 'ior_access_type': 'POSIX', },
-                'ubelix:gpu': { 'num_tasks': 3, },
+                'ubelix:gpu': { 'num_tasks': 1, },
                 'ubelix:ivy': { 'num_tasks': 3, },
-                'ubelix:broadwell': { 'num_tasks': 3, },
-                'ubelix:amd': { 'num_tasks': 3, },
+                'ubelix:bdw': { 'num_tasks': 3, },
+                'ubelix:epyc2': { 'num_tasks': 3, },
             },
         }
 
