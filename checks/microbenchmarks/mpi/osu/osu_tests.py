@@ -11,8 +11,7 @@ import reframe.utility.sanity as sn
 class AlltoallTest(rfm.RegressionTest):
     def __init__(self, variant):
         self.strict_check = False
-        self.valid_systems = ['ubelix:ivy',
-                'ubelix:broadwell', 'ubelix:amd']
+        self.valid_systems = ['ubelix:bdw', 'ubelix:epyc2']
         self.descr = 'Alltoall OSU microbenchmark'
         self.build_system = 'Make'
         self.build_system.makefile = 'Makefile_alltoall'
@@ -30,10 +29,8 @@ class AlltoallTest(rfm.RegressionTest):
         }
         self.tags = {variant, 'benchmark'}
         self.reference = {
-                #'ubelix:gpu': {'latency': (20.73, None, 2.0, 'us') },
-                'ubelix:ivy': {'latency': (20.73, None, 2.0, 'us') },
-                'ubelix:broadwell': {'latency': (20.73, None, 2.0, 'us') },
-                'ubelix:amd': {'latency': (20.73, None, 2.0, 'us') },
+                'ubelix:bdw': {'latency': (20.73, None, 2.0, 'us') },
+                'ubelix:epyc2': {'latency': (20.73, None, 2.0, 'us') },
         }
         self.num_tasks_per_node = 1
         self.num_gpus_per_node  = 0
@@ -45,30 +42,30 @@ class AlltoallTest(rfm.RegressionTest):
         }
 
 
-@rfm.simple_test
-class FlexAlltoallTest(rfm.RegressionTest):
-    def __init__(self):
-        self.valid_systems = ['ubelix:ivy', 'ubelix:broadwell']#, 'ubelix:amd'] # max 4 nodes on amd
-        self.valid_prog_environs = ['foss']
+#@rfm.simple_test
+#class FlexAlltoallTest(rfm.RegressionTest):
+#    def __init__(self):
+#        self.valid_systems = ['ubelix:bdw']#, 'ubelix:epyc2'] # max 4 nodes on epyc2
+#        self.valid_prog_environs = ['foss']
+#
+#        self.descr = 'Flexible Alltoall OSU test'
+#        self.build_system = 'Make'
+#        self.build_system.makefile = 'Makefile_alltoall'
+#        self.executable = './osu_alltoall'
+#        self.num_tasks_per_node = 1
+#        self.num_tasks = -5
+#        self.sanity_patterns = sn.assert_found(r'^1048576', self.stdout)
+#        self.tags = {'diagnostic', 'benchmark'}
+#        self.maintainers = ['Man']
 
-        self.descr = 'Flexible Alltoall OSU test'
-        self.build_system = 'Make'
-        self.build_system.makefile = 'Makefile_alltoall'
-        self.executable = './osu_alltoall'
-        self.num_tasks_per_node = 1
-        self.num_tasks = 0
-        self.sanity_patterns = sn.assert_found(r'^1048576', self.stdout)
-        self.tags = {'diagnostic', 'benchmark'}
-        self.maintainers = ['Man']
 
-
-@rfm.parameterized_test(['small'], ['large'])
+@rfm.parameterized_test(['small'])#, ['large'])
 class AllreduceTest(rfm.RegressionTest):
     def __init__(self, variant):
         self.strict_check = False
-        self.valid_systems = ['ubelix:ivy', 'ubelix:amd']
+        self.valid_systems = ['ubelix:bdw']
         if variant == 'small':
-            self.valid_systems += ['ubelix:gpu', 'ubelix:broadwell'] # thight limits on GPU and arm partition
+            self.valid_systems += ['ubelix:epyc2'] # thight limits on GPU and arm partition
 
         self.descr = 'Allreduce OSU microbenchmark'
         self.build_system = 'Make'
@@ -90,17 +87,15 @@ class AllreduceTest(rfm.RegressionTest):
             self.num_tasks = 3
             self.reference = {
                 'ubelix:gpu': { 'latency': (8, None, 0.05, 'us') },
-                'ubelix:ivy': { 'latency': (8, None, 0.05, 'us') },
-                'ubelix:broadwell': { 'latency': (8, None, 0.05, 'us') },
-                'ubelix:amd': { 'latency': (8, None, 0.05, 'us') },
+                'ubelix:bdw': { 'latency': (8, None, 0.05, 'us') },
+                'ubelix:epyc2': { 'latency': (8, None, 0.05, 'us') },
             }
         else:
             self.tags = {'benchmark'}
             self.num_tasks = 16
             self.reference = {
-                'ubelix:ivy': { 'latency': (8, None, 0.05, 'us') },
-                #'ubelix:broadwell': { 'latency': (8, None, 0.05, 'us') },
-                'ubelix:amd': { 'latency': (8, None, 0.05, 'us') },
+                'ubelix:bdw': { 'latency': (8, None, 0.05, 'us') },
+                'ubelix:epyc2': { 'latency': (8, None, 0.05, 'us') },
             }
 
         self.extra_resources = {
@@ -140,14 +135,12 @@ class P2PBaseTest(rfm.RegressionTest):
 class P2PCPUBandwidthTest(P2PBaseTest):
     def __init__(self):
         super().__init__()
-        self.valid_systems = ['ubelix:gpu', 'ubelix:ivy', 'ubelix:broadwell', 'ubelix:amd']
+        self.valid_systems = ['ubelix:bdw', 'ubelix:epyc2']
         self.executable = './p2p_osu_bw'
         self.executable_opts = ['-x', '100', '-i', '1000']
         self.reference = {
-                'ubelix:gpu': {'bw': (9607.0, -0.10, None, 'MB/s')},
-                'ubelix:ivy': {'bw': (9607.0, -0.10, None, 'MB/s')},
-                'ubelix:broadwell': {'bw': (9607.0, -0.10, None, 'MB/s')},
-                'ubelix:amd': {'bw': (9607.0, -0.10, None, 'MB/s')},
+                'ubelix:bdw': {'bw': (9607.0, -0.10, None, 'MB/s')},
+                'ubelix:epyc2': {'bw': (9607.0, -0.10, None, 'MB/s')},
         }
         self.perf_patterns = {
             'bw': sn.extractsingle(r'^4194304\s+(?P<bw>\S+)',
@@ -159,15 +152,13 @@ class P2PCPUBandwidthTest(P2PBaseTest):
 class P2PCPULatencyTest(P2PBaseTest):
     def __init__(self):
         super().__init__()
-        self.valid_systems = ['ubelix:gpu', 'ubelix:ivy', 'ubelix:broadwell', 'ubelix:amd']
+        self.valid_systems = ['ubelix:bdw', 'ubelix:epyc2']
         self.executable_opts = ['-x', '100', '-i', '1000']
 
         self.executable = './p2p_osu_latency'
         self.reference = {
-            'ubelix:gpu': {'latency': (1.30, None, 0.70, 'us')},
-            'ubelix:ivy': {'latency': (1.30, None, 0.70, 'us')},
-            'ubelix:broadwell': {'latency': (1.30, None, 0.70, 'us')},
-            'ubelix:amd': {'latency': (1.30, None, 0.70, 'us')},
+            'ubelix:bdw': {'latency': (1.30, None, 0.70, 'us')},
+            'ubelix:epyc2': {'latency': (1.30, None, 0.70, 'us')},
         }
         self.perf_patterns = {
             'latency': sn.extractsingle(r'^8\s+(?P<latency>\S+)',
@@ -175,56 +166,56 @@ class P2PCPULatencyTest(P2PBaseTest):
         }
 
 
-@rfm.simple_test
-class G2GBandwidthTest(P2PBaseTest):
-    def __init__(self):
-        super().__init__()
-        self.valid_systems = ['ubelix:gpu']
-        self.num_gpus_per_node = 1
-        self.executable = './p2p_osu_bw'
-        self.executable_opts = ['-x', '100', '-i', '1000', '-d',
-                                'cuda', 'D', 'D']
-
-        self.reference = {
-            'ubelix:gpu': {
-                'bw': (8813.09, -0.05, None, 'MB/s')
-            },
-            '*': {
-                'bw': (0, None, None, 'MB/s')
-            }
-        }
-        self.perf_patterns = {
-            'bw': sn.extractsingle(r'^4194304\s+(?P<bw>\S+)',
-                                   self.stdout, 'bw', float)
-        }
-        self.modules = ['CUDA']
-        self.build_system.ldflags = ['-L$EBROOTCUDA/lib64',
-                                     '-lcudart', '-lcuda']
-
-        self.build_system.cppflags = ['-D_ENABLE_CUDA_']
-
-
-@rfm.simple_test
-class G2GLatencyTest(P2PBaseTest):
-    def __init__(self):
-        super().__init__()
-        self.valid_systems = ['ubelix:gpu']
-        self.num_gpus_per_node = 1
-        self.executable = './p2p_osu_latency'
-        self.executable_opts = ['-x', '100', '-i', '1000', '-d',
-                                'cuda', 'D', 'D']
-
-        self.reference = {
-            'ubelix:gpu': {
-                'latency': (5.56, None, 0.1, 'us')
-            },
-        }
-        self.perf_patterns = {
-            'latency': sn.extractsingle(r'^8\s+(?P<latency>\S+)',
-                                        self.stdout, 'latency', float)
-        }
-        self.modules = ['CUDA']
-        self.build_system.ldflags = ['-L$EBROOTCUDA/lib64',
-                                     '-lcudart', '-lcuda']
-
-        self.build_system.cppflags = ['-D_ENABLE_CUDA_']
+#@rfm.simple_test
+#class G2GBandwidthTest(P2PBaseTest):
+#    def __init__(self):
+#        super().__init__()
+#        self.valid_systems = ['ubelix:gpu']
+#        self.num_gpus_per_node = 1
+#        self.executable = './p2p_osu_bw'
+#        self.executable_opts = ['-x', '100', '-i', '1000', '-d',
+#                                'cuda', 'D', 'D']
+#
+#        self.reference = {
+#            'ubelix:gpu': {
+#                'bw': (8813.09, -0.05, None, 'MB/s')
+#            },
+#            '*': {
+#                'bw': (0, None, None, 'MB/s')
+#            }
+#        }
+#        self.perf_patterns = {
+#            'bw': sn.extractsingle(r'^4194304\s+(?P<bw>\S+)',
+#                                   self.stdout, 'bw', float)
+#        }
+#        self.modules = ['CUDA']
+#        self.build_system.ldflags = ['-L$EBROOTCUDA/lib64',
+#                                     '-lcudart', '-lcuda']
+#
+#        self.build_system.cppflags = ['-D_ENABLE_CUDA_']
+#
+#
+#@rfm.simple_test
+#class G2GLatencyTest(P2PBaseTest):
+#    def __init__(self):
+#        super().__init__()
+#        self.valid_systems = ['ubelix:gpu']
+#        self.num_gpus_per_node = 1
+#        self.executable = './p2p_osu_latency'
+#        self.executable_opts = ['-x', '100', '-i', '1000', '-d',
+#                                'cuda', 'D', 'D']
+#
+#        self.reference = {
+#            'ubelix:gpu': {
+#                'latency': (5.56, None, 0.1, 'us')
+#            },
+#        }
+#        self.perf_patterns = {
+#            'latency': sn.extractsingle(r'^8\s+(?P<latency>\S+)',
+#                                        self.stdout, 'latency', float)
+#        }
+#        self.modules = ['CUDA']
+#        self.build_system.ldflags = ['-L$EBROOTCUDA/lib64',
+#                                     '-lcudart', '-lcuda']
+#
+#        self.build_system.cppflags = ['-D_ENABLE_CUDA_']

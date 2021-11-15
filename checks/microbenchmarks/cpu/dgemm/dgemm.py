@@ -16,7 +16,7 @@ class DGEMMTest(rfm.RegressionTest):
 
         # the perf patterns are automaticaly generated inside sanity
         self.perf_patterns = {}
-        self.valid_systems = ['ubelix:gpu', 'ubelix:ivy', 'ubelix:broadwell', 'ubelix:amd']
+        self.valid_systems = ['ubelix:gpu', 'ubelix:ivy', 'ubelix:bdw', 'ubelix:epyc2']
         self.valid_prog_environs = ['foss', 'intel']
 
         #self.num_tasks = 0
@@ -28,8 +28,8 @@ class DGEMMTest(rfm.RegressionTest):
         self.sys_reference = {
             'ubelix:gpu': (100.0, -0.15, None, 'Gflop/s'),
             'ubelix:ivy': (100.0, -0.15, None, 'Gflop/s'),
-            'ubelix:broadwell': (100.0, -0.15, None, 'Gflop/s'),
-            'ubelix:amd': (100.0, -0.15, None, 'Gflop/s'),
+            'ubelix:bdw': (100.0, -0.15, None, 'Gflop/s'),
+            'ubelix:epyc2': (100.0, -0.15, None, 'Gflop/s'),
         }
         self.maintainers = ['Man']
         self.tags = {'benchmark', 'diagnostic'}
@@ -58,12 +58,12 @@ class DGEMMTest(rfm.RegressionTest):
         elif self.current_partition.fullname in ['ubelix:ivy']:
             self.num_tasks = 1
             self.num_cpus_per_task = 16
-        elif self.current_partition.fullname in ['ubelix:broadwell']:
+        elif self.current_partition.fullname in ['ubelix:bdw']:
             self.num_tasks = 4
             self.num_cpus_per_task = 20
-        elif self.current_partition.fullname in ['ubelix:amd']:
+        elif self.current_partition.fullname in ['ubelix:epyc2']:
             self.num_tasks = 2
-            self.num_cpus_per_task = 128
+            self.num_cpus_per_task = 10
 
         if self.num_cpus_per_task:
             self.variables = {

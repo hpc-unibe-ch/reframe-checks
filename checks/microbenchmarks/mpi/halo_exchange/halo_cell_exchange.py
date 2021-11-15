@@ -9,7 +9,7 @@ import reframe.utility.sanity as sn
 
 @rfm.required_version('>=2.16.0-dev.0')
 @rfm.parameterized_test(*([a]
-                            for a in ['ivy', 'broadwell', 'amd']))
+                            for a in ['ivy', 'bdw', 'epyc2']))
 class HaloCellExchangeTest(rfm.RegressionTest):
     def __init__(self, arch):
         self.curr_arch = arch
@@ -20,8 +20,8 @@ class HaloCellExchangeTest(rfm.RegressionTest):
         self.executable_opts = ['input.txt']
         self.valid_systems = [ ]
 
-        if self.curr_arch in ['amd']:
-           self.valid_systems = [ 'ubelix:amd' ]
+        if self.curr_arch in ['epyc2']:
+           self.valid_systems = [ 'ubelix:epyc2' ]
            self.num_tasks = 4
            self.num_tasks_per_node = 1
            self.num_gpus_per_node = 0
@@ -54,8 +54,8 @@ class HaloCellExchangeTest(rfm.RegressionTest):
 
            self.sanity_patterns = sn.assert_eq(
                 sn.count(sn.findall(r'halo_cell_exchange', self.stdout)), 6)
-        elif self.curr_arch in ['ivy ', 'broadwell']:
-            self.valid_systems = [ 'ubelix:ivy', 'ubelix:broadwell' ]
+        elif self.curr_arch in ['ivy ', 'bdw']:
+            self.valid_systems = [ 'ubelix:ivy', 'ubelix:bdw' ]
             self.num_tasks = 6
             self.num_tasks_per_node = 1
             self.num_gpus_per_node = 0
@@ -112,7 +112,7 @@ class HaloCellExchangeTest(rfm.RegressionTest):
                 'time_6_10000': (1, None, 0.50, 's'),
                 'time_6_1000000': (1, None, 0.50, 's')
             },
-           'ubelix:broadwell': {
+           'ubelix:bdw': {
                 'time_2_10': (1, None, 0.50, 's'),
                 'time_2_10000': (1, None, 0.50, 's'),
                 'time_2_1000000': (1, None, 0.50, 's'),
@@ -123,7 +123,7 @@ class HaloCellExchangeTest(rfm.RegressionTest):
                 'time_6_10000': (1, None, 0.50, 's'),
                 'time_6_1000000': (1, None, 0.50, 's')
             },
-            'ubelix:amd': {
+            'ubelix:epyc2': {
                 'time_2_10': (2e-04, None, 0.50, 's'),
                 'time_2_10000': (1e-03, None, 0.50, 's'),
                 'time_2_1000000': (5e-03, None, 0.50, 's'),

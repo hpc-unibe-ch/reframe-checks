@@ -17,7 +17,7 @@ class StreamTest(rfm.RegressionTest):
     def __init__(self):
         self.descr = 'STREAM Benchmark'
         self.exclusive_access = True
-        self.valid_systems = ['ubelix:gpu', 'ubelix:ivy', 'ubelix:broadwell', 'ubelix:amd']
+        self.valid_systems = ['ubelix:bdw', 'ubelix:epyc2']
         self.valid_prog_environs = ['foss', 'intel']
 
         self.use_multithreading = False
@@ -32,10 +32,8 @@ class StreamTest(rfm.RegressionTest):
         self.num_tasks = 1
         self.num_tasks_per_node = 1
         self.stream_cpus_per_task = {
-            'ubelix:gpu': 3,
-            'ubelix:ivy': 16,
-            'ubelix:broadwell': 20,
-            'ubelix:amd': 128,
+            'ubelix:bdw': 20,
+            'ubelix:epyc2': 20,
         }
         self.variables = {
             'OMP_PLACES': 'threads',
@@ -49,16 +47,12 @@ class StreamTest(rfm.RegressionTest):
         }
         self.stream_bw_reference = {
             'foss': {
-                'ubelix:gpu': {'triad': (40000, -0.05, None, 'MB/s')},
-                'ubelix:ivy': {'triad': (40000, -0.05, None, 'MB/s')},
-                'ubelix:broadwell': {'triad': (40000, -0.05, None, 'MB/s')},
-                'ubelix:amd': {'triad': (40000, -0.05, None, 'MB/s')},
+                'ubelix:bdw': {'triad': (40000, -0.05, None, 'MB/s')},
+                'ubelix:epyc2': {'triad': (35000, -0.05, None, 'MB/s')},
             },
             'intel': {
-                'ubelix:gpu': {'triad': (40000, -0.05, None, 'MB/s')},
-                'ubelix:ivy': {'triad': (40000, -0.05, None, 'MB/s')},
-                'ubelix:broadwell': {'triad': (40000, -0.05, None, 'MB/s')},
-                'ubelix:amd': {'triad': (40000, -0.05, None, 'MB/s')},
+                'ubelix:bdw': {'triad': (40000, -0.05, None, 'MB/s')},
+                'ubelix:epyc2': {'triad': (35000, -0.05, None, 'MB/s')},
             },
         }
         self.tags = {'production'}
