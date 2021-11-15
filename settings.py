@@ -31,31 +31,6 @@ site_configuration = {
             ]
         },
         {
-            'name': 'submit01',
-            'descr': 'submit01 login node',
-            'hostnames': [
-                'submit01'
-            ],
-            'modules_system': 'lmod',
-            'stagedir': '{}/stage/'.format(reframe_workdir),
-            'outputdir': '{}/output/'.format(reframe_workdir),
-            'resourcesdir': '{}/resources'.format(reframe_workdir),
-            'partitions': [
-                {
-                    'name': 'login',
-                    'scheduler': 'local',
-                    'modules': [],
-                    'access': ['submit01'],
-                    'environs': [
-                        'foss',
-                        'builtin-gcc',
-                    ],
-                    'descr': 'Login nodes',
-                    'launcher': 'ssh'
-                }
-            ]
-        },
-        {
             'name': 'ubelix',
             'descr': 'UniBE HPC system UBELiX',
             'hostnames': [
@@ -80,6 +55,7 @@ site_configuration = {
                 {
                      'name': 'submit01',
                      'scheduler': 'local',
+                     'launcher': 'local',
                      'modules': [],
                      'access': ['submit01'],
                      'environs': [
@@ -93,6 +69,7 @@ site_configuration = {
                 {
                      'name': 'submit03',
                      'scheduler': 'local',
+                     'launcher': 'local',
                      'modules': [],
                      'access': ['submit03'],
                      'environs': [
@@ -104,23 +81,10 @@ site_configuration = {
                      'launcher': 'ssh'
                  },
                 {
-                    'name': 'ivy',
+                    'name': 'bdw',
                     'scheduler': 'slurm',
                     'modules': [],
-                    'access': ['--constraint=ivy'],
-                    'environs': [
-                        'foss',
-                        'intel',
-                        'pgi'
-                    ],
-                    'descr': 'ivybridge compute nodes',
-                    'launcher': 'srun'
-                },
-                {
-                    'name': 'broadwell',
-                    'scheduler': 'slurm',
-                    'modules': [],
-                    'access': ['--constraint=broadwell'],
+                    'access': ['--partition=bdw'],
                     'environs': [
                         'foss',
                         'intel',
@@ -130,10 +94,10 @@ site_configuration = {
                     'launcher': 'srun'
                 },
                 {
-                    'name': 'amd',
+                    'name': 'epyc2',
                     'scheduler': 'slurm',
                     'modules': [],
-                    'access': ['--partition=amd'],
+                    'access': ['--partition=epyc2'],
                     'environs': [
                         'foss',
                         'intel',
