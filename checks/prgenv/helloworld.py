@@ -15,7 +15,7 @@ class HelloWorldBaseTest(rfm.RegressionTest):
         self.descr = self.lang_names[lang] + ' Hello World'
         self.sourcepath = 'hello_world'
         self.build_system = 'SingleSource'
-        self.valid_systems = ['*']
+        self.valid_systems = ['ubelix:epyc2', 'ubelix:bdw', 'ubelix:gpu']
 
         self.valid_prog_environs = ['foss', 'intel']
 
@@ -67,7 +67,7 @@ class HelloWorldBaseTest(rfm.RegressionTest):
             }
         }
 
-        self.maintainers = ['VH', 'EK']
+        self.maintainers = ['Man']
         self.tags = {'production', 'prgenv'}
 
     @rfm.run_before('compile')
@@ -168,7 +168,7 @@ class HelloWorldTestMPIOpenMP(HelloWorldBaseTest):
             self.num_tasks_per_node = 1
             self.num_cpus_per_task = 2
         else:
-            self.valid_systems = ['ubelix:ivy', 'ubelix:broadwell', 'ubelix:amd']
+            self.valid_systems = ['ubelix:ivy', 'ubelix:bdw', 'ubelix:epyc2']
             self.num_tasks = 3
             self.num_tasks_per_node = 3
             self.num_cpus_per_task = 2
