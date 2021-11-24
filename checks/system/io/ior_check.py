@@ -12,11 +12,14 @@ import reframe.utility.sanity as sn
 
 
 class IorCheck(rfm.RegressionTest):
-    def __init__(self, base_dir):
-        self.descr = f'IOR check ({base_dir})'
+    base_dir = parameter(['/storage/scratch',
+                        '/storage/workspace',
+                        '/storage/homefs'])
+    @run_after('init')
+    def set_params(self):
+        self.descr = f'IOR check ({self.base_dir})'
         self.time_limit = '1h'
-        self.tags = {'ops', base_dir}
-        self.base_dir = base_dir
+        self.tags = {'ops', self.base_dir}
         if self.base_dir in os.getenv('SCRATCH'):
             self.test_dir = os.path.join(os.getenv('SCRATCH'), 'ior')
         elif self.base_dir in os.getenv('WORKSPACE'):
@@ -28,29 +31,20 @@ class IorCheck(rfm.RegressionTest):
         self.test_file = os.path.join(self.test_dir, 'ior')
         self.fs = {
             '/storage/scratch': {
-                'valid_systems': ['ubelix:ivy', 'ubelix:bdw', 'ubelix:gpu', 'ubelix:epyc2', 'ubelix:submit01', 'ubelix:submit03'],
-                'ubelix:submit01': { 'ior_access_type': 'POSIX', },
-                'ubelix:submit03': { 'ior_access_type': 'POSIX', },
+                'valid_systems': ['ubelix:bdw', 'ubelix:gpu', 'ubelix:epyc2'],
                 'ubelix:gpu': { 'num_tasks': 1, },
-                'ubelix:ivy': { 'num_tasks': 3, },
                 'ubelix:bdw': { 'num_tasks': 3, },
                 'ubelix:epyc2': { 'num_tasks': 3, },
             },
             '/storage/workspace': {
-                 'valid_systems': ['ubelix:ivy', 'ubelix:bdw', 'ubelix:gpu', 'ubelix:epyc2', 'ubelix:submit01', 'ubelix:submit03'],
-                'ubelix:submit01': { 'ior_access_type': 'POSIX', },
-                'ubelix:submit03': { 'ior_access_type': 'POSIX', },
+                 'valid_systems': ['ubelix:bdw', 'ubelix:gpu', 'ubelix:epyc2'],
                 'ubelix:gpu': { 'num_tasks': 1, },
-                'ubelix:ivy': { 'num_tasks': 3, },
                 'ubelix:bdw': { 'num_tasks': 3, },
                 'ubelix:epyc2': { 'num_tasks': 3, },
             },
             '/storage/homefs': {
-                  'valid_systems': ['ubelix:ivy', 'ubelix:bdw', 'ubelix:gpu', 'ubelix:epyc2', 'ubelix:submit01', 'ubelix:submit03'],
-                'ubelix:submit01': { 'ior_access_type': 'POSIX', },
-                'ubelix:submit03': { 'ior_access_type': 'POSIX', },
+                  'valid_systems': ['ubelix:bdw', 'ubelix:gpu', 'ubelix:epyc2'],
                 'ubelix:gpu': { 'num_tasks': 1, },
-                'ubelix:ivy': { 'num_tasks': 3, },
                 'ubelix:bdw': { 'num_tasks': 3, },
                 'ubelix:epyc2': { 'num_tasks': 3, },
             },
@@ -70,13 +64,13 @@ class IorCheck(rfm.RegressionTest):
             data.setdefault('dummy', {})  # entry for unknown systems
 
         cur_sys = self.current_system.name
-        if cur_sys not in self.fs[base_dir]:
+        if cur_sys not in self.fs[self.base_dir]:
             cur_sys = 'dummy'
 
-        self.valid_systems = self.fs[base_dir]['valid_systems']
+        self.valid_systems = self.fs[self.base_dir]['valid_systems']
 
-        self.ior_block_size = self.fs[base_dir]['ior_block_size']
-        self.ior_access_type = self.fs[base_dir]['ior_access_type']
+        self.ior_block_size = self.fs[self.base_dir]['ior_block_size']
+        self.ior_access_type = self.fs[self.base_dir]['ior_access_type']
         self.executable_opts = ['-B', '-F', '-C ', '-Q 1', '-t 4m', '-D 30',
                                 '-b', self.ior_block_size,
                                 '-a', self.ior_access_type]
@@ -85,7 +79,7 @@ class IorCheck(rfm.RegressionTest):
         self.build_system = 'Make'
 
         vpe = 'valid_prog_environs'
-        penv = self.fs[base_dir][cur_sys].get(vpe, ['intel'])
+        penv = self.fs[self.base_dir][cur_sys].get(vpe, ['intel'])
         self.valid_prog_environs = penv
 
         self.build_system.options = ['posix', 'mpiio']
@@ -99,7 +93,7 @@ class IorCheck(rfm.RegressionTest):
         # Our references are based on fs types but regression needs reference
         # per system.
         self.reference = {
-            '*': self.fs[base_dir]['reference']
+            '*': self.fs[self.base_dir]['reference']
         }
 
         self.maintainers = ['Mandes']
@@ -108,13 +102,13 @@ class IorCheck(rfm.RegressionTest):
         if self.current_system.name in systems_to_test:
             self.tags |= {'production', 'external-resources'}
 
-    @rfm.run_before('compile')
+    @run_before('compile')
     def set_compile(self):
         self.builddir = os.path.join(self.stagedir, 'src', 'C')
         self.prebuild_cmds = ['cd ' + self.builddir ]
         self.postbuild_cmds = ['cd ' + self.stagedir ]
 
-    @rfm.run_before('run')
+    @run_before('run')
     def set_exec_opts(self):
         self.executable = os.path.join(self.stagedir, 'src', 'C', 'IOR')
         part = self.current_partition.fullname
@@ -124,35 +118,40 @@ class IorCheck(rfm.RegressionTest):
         self.test_file += '.' + self.current_partition.name
         self.executable_opts += ['-o', self.test_file]
 
-
-@rfm.parameterized_test(['/storage/scratch'],
-                        ['/storage/workspace'],
-                        ['/storage/homefs'])
+@rfm.simple_test
 class IorWriteCheck(IorCheck):
-    def __init__(self, base_dir):
-        super().__init__(base_dir)
-        self.executable_opts += ['-w', '-k']
-        self.sanity_patterns = sn.assert_found(r'^Max Write: ', self.stdout)
+    executable_opts += ['-w', '-k']
+    tags |= {'write'}
+
+    @sanity_function
+    def assert_output(self):
+        return sn.assert_found(r'^Max Write: ', self.stdout)
+
+    @run_after('init')
+    def set_perf_patterns(self):
         self.perf_patterns = {
             'write_bw': sn.extractsingle(
                 r'^Max Write:\s+(?P<write_bw>\S+) MiB/sec', self.stdout,
                 'write_bw', float)
         }
-        self.tags |= {'write'}
 
-
-@rfm.parameterized_test(['/storage/scratch'],
-                        ['/storage/workspace'],
-                        ['/storage/homefs'])
+@rfm.simple_test
 class IorReadCheck(IorCheck):
-    def __init__(self, base_dir):
-        super().__init__(base_dir)
-        self.executable_opts += ['-r']
-        self.sanity_patterns = sn.assert_found(r'^Max Read: ', self.stdout)
+    executable_opts += ['-r']
+    tags |= {'read'}
+
+    @sanity_function
+    def assert_output(self):
+        return sn.assert_found(r'^Max Read: ', self.stdout)
+
+    @run_after('init')
+    def set_perf_patterns(self):
         self.perf_patterns = {
             'read_bw': sn.extractsingle(
                 r'^Max Read:\s+(?P<read_bw>\S+) MiB/sec', self.stdout,
                 'read_bw', float)
         }
+
+    @run_after('init')
+    def set_dependency(self):
         self.depends_on(re.sub(r'IorReadCheck', 'IorWriteCheck', self.name))
-        self.tags |= {'read'}

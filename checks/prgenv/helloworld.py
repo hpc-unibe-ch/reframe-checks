@@ -5,19 +5,26 @@ import reframe.utility.sanity as sn
 
 
 class HelloWorldBaseTest(rfm.RegressionTest):
-    def __init__(self, variant, lang):
+    lang = parameter(['c', 'cpp', 'f90'])
+    prgenv_flags = {}
+    sourcepath = 'hello_world'
+    build_system = 'SingleSource'
+    valid_systems = ['ubelix:epyc2', 'ubelix:bdw', 'ubelix:gpu']
+    valid_prog_environs = ['foss', 'intel']
+    maintainers = ['Mandes']
+    tags = {'production', 'prgenv'}
+
+    @run_after('init')
+    def set_params(self):
         self.prgenv_flags = {}
         self.lang_names = {
             'c': 'C',
             'cpp': 'C++',
             'f90': 'Fortran 90'
         }
-        self.descr = self.lang_names[lang] + ' Hello World'
+        self.descr = self.lang_names[self.lang] + ' Hello World'
         self.sourcepath = 'hello_world'
         self.build_system = 'SingleSource'
-        self.valid_systems = ['ubelix:epyc2', 'ubelix:bdw', 'ubelix:gpu']
-
-        self.valid_prog_environs = ['foss', 'intel']
 
         self.compilation_time_seconds = None
 
@@ -67,114 +74,124 @@ class HelloWorldBaseTest(rfm.RegressionTest):
             }
         }
 
-        self.maintainers = ['Man']
-        self.tags = {'production', 'prgenv'}
-
-    @rfm.run_before('compile')
+    @run_before('compile')
     def setflags(self):
         envname = self.current_environ.name.replace('-nompi', '')
-        prgenv_flags = self.prgenv_flags[envname]
+        try:
+            prgenv_flags = self.prgenv_flags[envname]
+        except KeyError:
+            prgenv_flags = []
+
         self.build_system.cflags = prgenv_flags
         self.build_system.cxxflags = prgenv_flags
         self.build_system.fflags = prgenv_flags
 
-    @rfm.run_before('compile')
+    @run_before('compile')
     def compile_timer_start(self):
         self.compilation_time_seconds = datetime.now()
 
-    @rfm.run_after('compile')
+    @run_after('compile')
     def compile_timer_end(self):
         elapsed = datetime.now() - self.compilation_time_seconds
         self.compilation_time_seconds = elapsed.total_seconds()
 
-@rfm.parameterized_test(*([lang]
-                          for lang in ['cpp', 'c', 'f90']))
+@rfm.simple_test
 class HelloWorldTestSerial(HelloWorldBaseTest):
-    def __init__(self, lang):
-        super().__init__('serial', lang)
-        self.sourcesdir = 'src/serial'
-        self.sourcepath += '_serial.' + lang
+    sourcesdir = 'src/serial'
+    num_tasks = 1
+    num_tasks_per_node = 1
+    num_cpus_per_task = 1
+    @run_after('init')
+    def update_description(self):
         self.descr += ' Serial '
-        self.prgenv_flags = {
-            'foss': [],
-            'intel': [],
-        }
-        self.num_tasks = 1
-        self.num_tasks_per_node = 1
-        self.num_cpus_per_task = 1
+    @run_before('compile')
+    def update_sourcepath(self):
+        self.sourcepath += f'_serial.{self.lang}'
 
-@rfm.parameterized_test(*([lang]
-                          for lang in ['cpp', 'c', 'f90']))
+@rfm.simple_test
 class HelloWorldTestOpenMP(HelloWorldBaseTest):
-    def __init__(self, lang):
-        super().__init__('openmp', lang)
-        self.sourcesdir = 'src/openmp'
-        self.sourcepath += '_openmp.' + lang
-        self.descr += ' OpenMP '
+    sourcesdir = 'src/openmp'
+    num_tasks = 1
+    num_tasks_per_node = 1
+    num_cpus_per_task = 4
+
+    @run_after('init')
+    def set_prgenv_compilation_flags_map(self):
         self.prgenv_flags = {
             'foss': ['-fopenmp'],
             'intel': ['-qopenmp'],
         }
 
-        self.num_tasks = 1
-        self.num_tasks_per_node = 1
-        self.num_cpus_per_task = 4
+    @run_after('init')
+    def update_description(self):
+        self.descr += ' OpenMP '
 
+    @run_before('compile')
+    def update_sourcepath(self):
+        self.sourcepath += '_openmp.' + self.lang
+
+    @run_before('run')
+    def set_omp_env_variable(self):
         # On SLURM there is no need to set OMP_NUM_THREADS if one defines
         # num_cpus_per_task, but adding for completeness and portability
-        self.variables = {
-            'OMP_NUM_THREADS': str(self.num_cpus_per_task)
-        }
+        self.variables['OMP_NUM_THREADS'] = str(self.num_cpus_per_task)
 
-
-@rfm.parameterized_test(*([lang]
-                          for lang in ['cpp', 'c', 'f90']))
+@rfm.simple_test
 class HelloWorldTestMPI(HelloWorldBaseTest):
-    def __init__(self, lang):
-        super().__init__('mpi', lang)
-        self.sourcesdir = 'src/mpi'
-        self.sourcepath += '_mpi.' + lang
+    sourcesdir = 'src/mpi'
+    # for the MPI test the self.num_tasks_per_node should always be one. If
+    # not, the test will fail for the total number of lines in the output
+    # file is different then self.num_tasks * self.num_tasks_per_node
+    num_tasks = 2
+    num_tasks_per_node = 1
+    num_cpus_per_task = 1
+
+    @run_after('init')
+    def update_description(self):
         self.descr += ' MPI '
-        self.prgenv_flags = {
-            'foss': [],
-            'intel': [],
-        }
 
-        # for the MPI test the self.num_tasks_per_node should always be one. If
-        # not, the test will fail for the total number of lines in the output
-        # file is different then self.num_tasks * self.num_tasks_per_node
-        self.num_tasks = 2
-        self.num_tasks_per_node = 1
-        self.num_cpus_per_task = 1
+    @run_before('compile')
+    def update_sourcepath(self):
+        self.sourcepath += '_mpi.' + self.lang
 
-
-@rfm.parameterized_test(*([lang,si]
-                          for lang in ['cpp', 'c', 'f90']
-                          for si in ['small', 'normal']))
+@rfm.simple_test
 class HelloWorldTestMPIOpenMP(HelloWorldBaseTest):
-    def __init__(self, lang, si):
-        super().__init__('mpi_openmp', lang)
-        self.sourcesdir = 'src/mpi_openmp'
-        self.sourcepath += '_mpi_openmp.' + lang
-        self.descr += ' MPI + OpenMP '
+    sourcesdir = 'src/mpi_openmp'
+
+    @run_after('init')
+    def set_prgenv_compilation_flags_map(self):
         self.prgenv_flags = {
             'foss': ['-fopenmp'],
             'intel': ['-qopenmp'],
         }
 
-        if (si is 'small'):
-            self.valid_systems = ['ubelix:gpu']
+    @run_after('init')
+    def update_description(self):
+        self.descr += ' MPI + OpenMP '
+
+    @run_before('compile')
+    def update_sourcepath(self):
+        self.sourcepath += '_mpi_openmp.' + self.lang
+
+    @run_before('run')
+    def set_job_size(self):
+        if self.current_partition.name == 'gpu':
             self.num_tasks = 2
             self.num_tasks_per_node = 1
-            self.num_cpus_per_task = 2
-        else:
-            self.valid_systems = ['ubelix:ivy', 'ubelix:bdw', 'ubelix:epyc2']
+            self.num_cpus_per_task = 1
+
+        elif self.current_partition.name == 'epyc2':
             self.num_tasks = 3
             self.num_tasks_per_node = 3
             self.num_cpus_per_task = 2
 
+        elif self.current_partition.name == 'bdw':
+            self.num_tasks = 5
+            self.num_tasks_per_node = 5
+            self.num_cpus_per_task = 4
+
+    @run_before('run')
+    def set_omp_env_variable(self):
         # On SLURM there is no need to set OMP_NUM_THREADS if one defines
         # num_cpus_per_task, but adding for completeness and portability
-        self.variables = {
-            'OMP_NUM_THREADS': str(self.num_cpus_per_task)
-        }
+        self.variables['OMP_NUM_THREADS'] = str(self.num_cpus_per_task)
