@@ -9,25 +9,34 @@ class HelloWorldBaseTest(rfm.RegressionTest):
     prgenv_flags = {}
     sourcepath = 'hello_world'
     build_system = 'SingleSource'
+    prebuild_cmds = ['_rfm_build_time="$(date +%s%N)"']
+    postbuild_cmds = [
+        '_rfm_build_time="$(($(date +%s%N)-_rfm_build_time))"',
+        'echo "Compilations time (ns): $_rfm_build_time"'
+    ]
     valid_systems = ['ubelix:epyc2', 'ubelix:bdw', 'ubelix:gpu']
     valid_prog_environs = ['foss', 'intel']
+
+    reference = {
+        '*': {
+            'compilation_time': (60, None, 0.1, 's')
+        }
+    }
+
     maintainers = ['Mandes']
     tags = {'production', 'prgenv'}
 
     @run_after('init')
-    def set_params(self):
-        self.prgenv_flags = {}
+    def set_description(self):
         self.lang_names = {
             'c': 'C',
             'cpp': 'C++',
             'f90': 'Fortran 90'
         }
         self.descr = self.lang_names[self.lang] + ' Hello World'
-        self.sourcepath = 'hello_world'
-        self.build_system = 'SingleSource'
 
-        self.compilation_time_seconds = None
-
+    @sanity_function
+    def assert_hello_world(self):
         result = sn.findall(r'Hello World from thread \s*(\d+) out '
                             r'of \s*(\d+) from process \s*(\d+) out of '
                             r'\s*(\d+)', self.stdout)
@@ -47,8 +56,7 @@ class HelloWorldBaseTest(rfm.RegressionTest):
         def num_ranks(match):
             return int(match.group(4))
 
-        self.sanity_patterns = sn.all(
-            sn.chain(
+        return sn.all(sn.chain(
                 [sn.assert_eq(sn.count(result), num_tasks*num_cpus_per_task)],
                 sn.map(lambda x: sn.assert_lt(tid(x), num_threads(x)), result),
                 sn.map(lambda x: sn.assert_lt(rank(x), num_ranks(x)), result),
@@ -65,18 +73,10 @@ class HelloWorldBaseTest(rfm.RegressionTest):
                 ),
             )
         )
-        self.perf_patterns = {
-            'compilation_time': sn.getattr(self, 'compilation_time_seconds')
-        }
-        self.reference = {
-            '*': {
-                'compilation_time': (60, None, 0.1, 's')
-            }
-        }
 
     @run_before('compile')
     def setflags(self):
-        envname = self.current_environ.name.replace('-nompi', '')
+        envname = self.current_environ.name
         try:
             prgenv_flags = self.prgenv_flags[envname]
         except KeyError:
@@ -86,14 +86,10 @@ class HelloWorldBaseTest(rfm.RegressionTest):
         self.build_system.cxxflags = prgenv_flags
         self.build_system.fflags = prgenv_flags
 
-    @run_before('compile')
-    def compile_timer_start(self):
-        self.compilation_time_seconds = datetime.now()
-
-    @run_after('compile')
-    def compile_timer_end(self):
-        elapsed = datetime.now() - self.compilation_time_seconds
-        self.compilation_time_seconds = elapsed.total_seconds()
+    @performance_function('s')
+    def compilation_time(self):
+        return sn.extractsingle(r'Compilations time \(ns\): (\d+)',
+                                self.build_stdout, 1, float) * 1.0e-9
 
 @rfm.simple_test
 class HelloWorldTestSerial(HelloWorldBaseTest):
